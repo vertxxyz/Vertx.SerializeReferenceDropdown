@@ -1,0 +1,22 @@
+{
+    "name": "Vertx.SerializeReferenceDropdown.Editor",
+    "rootNamespace": "Vertx.Attributes.Editor",
+    "references": [
+        "GUID:bf920f722eda2274cb45dfae0332e103",
+        "GUID:fa341ef7bb8ead74d814badb98304c0d",
+        "GUID:52dd4d866d63f4340922689e9cd83b77"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "EditorPatching_0Harmony.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

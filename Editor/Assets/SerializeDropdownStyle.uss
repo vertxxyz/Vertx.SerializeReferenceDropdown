@@ -1,0 +1,33 @@
+.vertx-reference-dropdown__container {
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-color: black;
+    border-width: 1px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    margin-top: 2px;
+    margin-left: -3px;
+    margin-right: -3px;
+    padding-left: 3px;
+    padding-right: 3px
+}
+
+.vertx-reference-dropdown__background {
+    background-color: rgba(0.1, 0.1, 0.1, 0.2);
+    position: absolute;
+    top: 22px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.vertx-reference-dropdown__container > DropdownButton {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.vertx-reference-dropdown__container > .vertx-dropdown-button > .vertx-dropdown-button__label {
+    -unity-font-style: bold;
+}
