@@ -1,28 +1,31 @@
 # SerializeReference Dropdown
+### `[ReferenceDropdown]`
+Decorates a `[SerializeReference]` field, adding a type selection dropdown and optional features.  
 
-> **Warning**
-> **This package requires 2020.3+**  
-> In versions **below 2021** `ReferenceDropdown` may draw incorrectly when used with property drawers that nest property fields.
+| Argument                               | Description                                                                                                                       |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| **Type** type                          | Optional type constraint                                                                                                          |
+| **ReferenceDropdownFeatures** features | Optional feature selection flags:<br/>- Remove the constrained type label (Type)<br/>- Remove "Set to null" from the context menu |
 
-## `[ReferenceDropdown]`
-- `[ReferenceDropdown]`
-- `[ReferenceDropdown(typeof(Example))]`  
-Decorates a `[SerializeReference]` field, providing instances of a type that can easily be added via a dropdown.  
   
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
 
-> :Note:
+> **Note**  
 > `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
 
 IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
-UIToolkit support uses stateful DecoratorDrawer hacks to support property drawers.  
-Other implementations may not achieve the same flexibility with property drawers due to the complexity of these approaches.
+UIToolkit support uses stateful DecoratorDrawer hacks.  
+Other implementations often don't support property drawers due to the complexity of these approaches.
 
 ---
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
 
 ## Installation
+
+> **Warning**  
+> **This package requires Unity 2020.3+**  
+> In versions **below 2021** `ReferenceDropdown` may draw incorrectly when used with property drawers that nest property fields.
 
 <details>
 <summary>Add from OpenUPM <em>| via scoped registry, recommended</em></summary>
