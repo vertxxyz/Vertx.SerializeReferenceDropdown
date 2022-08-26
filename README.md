@@ -1,24 +1,23 @@
 # SerializeReference Dropdown
 ### `[ReferenceDropdown]`
-Decorates a `[SerializeReference]` field, adding a type selection dropdown and optional features.  
+Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/SerializeReference.html) field, adding a type selection dropdown and optional features.  
 
-| Argument                               | Description                                                                                                                       |
-|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| **Type** type                          | Optional type constraint                                                                                                          |
-| **ReferenceDropdownFeatures** features | Optional feature selection flags:<br/>- Remove the constrained type label (Type)<br/>- Remove "Set to null" from the context menu |
+| Argument                | Description                                                                                                                                                           |
+|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **type** (optional)     | Type constraint                                                                                                                                                       |
+| **features** (optional) | Feature selection flags:<br/>- Remove the constrained type label (Type)<br/>- Remove "Set to null" from the context menu<br/>- Hide the warning icon for null entries |
 
   
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
 
 > **Note**  
-> `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
-
-IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
-UIToolkit support uses stateful DecoratorDrawer hacks.  
-Other implementations often don't support property drawers due to the complexity of these approaches.
+> `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.
+> IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
+> UIToolkit support uses stateful DecoratorDrawer hacks.  
+> Other implementations often don't support property drawers due to the complexity of these approaches.
 
 ---
-
+If you find this resource helpful:  
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
 
 ## Installation

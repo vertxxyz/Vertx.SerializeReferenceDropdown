@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Vertx.Utilities.Editor;
+using static Vertx.Attributes.Editor.ReferenceDropdownDecoratorShared;
 
 namespace Vertx.Attributes.Editor
 {
@@ -18,47 +18,56 @@ namespace Vertx.Attributes.Editor
 	[CustomPropertyDrawer(typeof(ReferenceDropdownAttribute))]
 	internal class ReferenceDropdownUIToolkit : DecoratorDrawer
 	{
-		private const string ussClassName = "vertx-reference-dropdown";
-		private const string containerUssClassName = ussClassName + "__container";
-		private const string backgroundUssClassName = ussClassName + "__background";
-
-		private static float HeaderHeight => 20;
-
 		// This is zero because IMGUI support is not handled via this decorator.
 		public override float GetHeight() => 0;
 
-		public override VisualElement CreatePropertyGUI()
-		{
-			var container = new VisualElement
-			{
-				name = "ReferenceDropdown Container"
-			};
-			container.AddToClassList(containerUssClassName);
-			container.RegisterCallback<AttachToPanelEvent, VisualElement>(AttachToPanel, container);
+		public override VisualElement CreatePropertyGUI() => new ReferenceDropdown((ReferenceDropdownAttribute)attribute);
+	}
 
-			return container;
+	internal class ReferenceDropdown : VisualElement
+	{
+		private readonly ReferenceDropdownAttribute _attribute;
+		private const string StylePath = "Packages/com.vertx.serializereference-dropdown/Editor/Assets/SerializeDropdownStyle.uss";
+		private const string UssClassName = "vertx-reference-dropdown";
+		private const string ContainerUssClassName = UssClassName + "__container";
+		private const string BackgroundUssClassName = UssClassName + "__background";
+		private const string Name = nameof(ReferenceDropdown) + " Container";
+		private const string ArrayDriverName = nameof(ReferenceDropdown) + " Array Driver";
+		private const string ArrayElementDecoratorName = nameof(ReferenceDropdown) + " Array Element Decorator";
+		private const string BackgroundName = nameof(ReferenceDropdown) + " Background";
+
+		private VisualElement _backgroundElement;
+
+		public ReferenceDropdown(ReferenceDropdownAttribute attribute)
+		{
+			_attribute = attribute;
+			name = Name;
+			AddToClassList(ContainerUssClassName);
+			pickingMode = PickingMode.Ignore;
+			RegisterCallback<AttachToPanelEvent>(AttachToPanel);
+			RegisterCallback<DetachFromPanelEvent>(DetachFromPanel);
 		}
 
 		private static StyleSheet _serializeDropdownStyle;
 
-		private void AttachToPanel(AttachToPanelEvent evt, VisualElement target)
+		private void AttachToPanel(AttachToPanelEvent evt)
 		{
 			VisualElement root = evt.destinationPanel.visualTree;
 			root = root.Children().SingleOrDefault(c => c.name.StartsWith("rootVisualContainer", StringComparison.Ordinal)) ?? root;
-			_serializeDropdownStyle ??= AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.vertx.serializereference-dropdown/Editor/Assets/SerializeDropdownStyle.uss");
+			_serializeDropdownStyle ??= AssetDatabase.LoadAssetAtPath<StyleSheet>(StylePath);
 			if (!root.styleSheets.Contains(_serializeDropdownStyle))
 				root.styleSheets.Add(_serializeDropdownStyle);
 
-			VisualElement parent = target;
+			VisualElement parentQuery = this;
 			do
 			{
-				parent = parent.parent;
-			} while (parent is not (PropertyField or null));
+				parentQuery = parentQuery.parent;
+			} while (parentQuery is not (PropertyField or null));
 
-			if (parent is not PropertyField propertyField)
+			if (parentQuery is not PropertyField propertyField)
 				return;
 
-			var serializedProperty = (SerializedProperty)typeof(PropertyField).GetProperty("serializedProperty", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(propertyField);
+			var serializedProperty = GetSerializedProperty(propertyField);
 			if (serializedProperty == null)
 			{
 				Debug.LogWarning($"PropertyField not bound before {nameof(AttachToPanel)} was called.");
@@ -67,34 +76,41 @@ namespace Vertx.Attributes.Editor
 
 			if (serializedProperty.isArray)
 			{
-				target.name = "ReferenceDropdown Array Driver";
-				target.style.display = DisplayStyle.None;
+				name = ArrayDriverName;
+				style.display = DisplayStyle.None;
 
 				RegisterArrayElementFields(propertyField);
 				return;
 			}
 
-			DropdownButton dropdownButton = new DropdownButton(serializedProperty.displayName, "Example", button => { });
-			target.Add(dropdownButton);
+			(GUIContent label, _) = GetLabel(_attribute, serializedProperty);
+			DropdownButton dropdownButton = new DropdownButton(
+				serializedProperty.displayName,
+				label.text,
+				button => ShowPropertyDropdown(
+					button.worldBound,
+					propertyField,
+					_attribute.Type,
+					() => UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true)
+				)
+			);
+			UpdateDropdownVisual(serializedProperty, dropdownButton, _attribute);
+			Add(dropdownButton);
 
-			var background = new VisualElement
+			if (_backgroundElement == null)
 			{
-				name = "ReferenceDropdown Background",
-				style =
+				_backgroundElement = new VisualElement
 				{
-					backgroundColor = EditorGUIUtils.HeaderColor,
-					position = Position.Absolute,
-					top = EditorGUIUtility.standardVerticalSpacing + HeaderHeight,
-					bottom = 0,
-					left = 0,
-					right = 0,
-					borderBottomLeftRadius = 3,
-					borderBottomRightRadius = 3
-				}
-			};
-			background.AddToClassList(backgroundUssClassName);
-			parent.Insert(0, background);
+					name = BackgroundName,
+					pickingMode = PickingMode.Ignore
+				};
+				_backgroundElement.AddToClassList(BackgroundUssClassName);
+			}
+
+			parentQuery.Insert(0, _backgroundElement);
 		}
+
+		private void DetachFromPanel(DetachFromPanelEvent evt) => _backgroundElement?.RemoveFromHierarchy();
 
 		private void RegisterArrayElementFields(
 			VisualElement root,
@@ -121,7 +137,6 @@ namespace Vertx.Attributes.Editor
 				return;
 			}
 
-
 			// ListViewSerializedObjectBinding will come along later when the serialized object is bound
 			// and nuke all our work! But this doesn't happen on domain reload, so the other setup must remain too!
 			// At least we're not dealing with the IL hell that is the IMGUI implementation 🙂
@@ -144,13 +159,32 @@ namespace Vertx.Attributes.Editor
 						return; // Already set up!
 					var drawerContainer = new VisualElement
 					{
-						name = "ReferenceDropdown Array Element Decorator"
+						name = ArrayElementDecoratorName
 					};
 					drawerContainer.AddToClassList(decoratorDrawerContainerUss);
-					drawerContainer.Add(CreatePropertyGUI());
+					drawerContainer.Add(new ReferenceDropdown(_attribute)
+					{
+						name = Name
+					});
 					field.Insert(0, drawerContainer);
 				}
 			}
+		}
+
+		private static void UpdateDropdownVisual(SerializedProperty property, DropdownButton dropdown, ReferenceDropdownAttribute attribute, bool updateLabel = false)
+		{
+			bool referenceIsAssigned;
+			if (updateLabel)
+			{
+				GUIContent label;
+				(label, referenceIsAssigned) = GetLabel(attribute, property);
+				dropdown.Text = label.text;
+			}
+			else
+				referenceIsAssigned = !string.IsNullOrEmpty(property.managedReferenceFullTypename);
+
+			if ((attribute.Features & ReferenceDropdownFeatures.ShowWarningForNull) != 0)
+				dropdown.IconType = referenceIsAssigned ? HelpBoxMessageType.None : HelpBoxMessageType.Warning;
 		}
 
 		private void RegisterSerializedObjectBindEvent(VisualElement element, Action<SerializedObject> callback)
@@ -161,7 +195,7 @@ namespace Vertx.Attributes.Editor
 			Type argsType = typeof(Action<SerializedObject>);
 			Type callbackType = typeof(EventCallback<,>).MakeGenericType(serializedPropertyBindEventType, argsType);
 			var registerCallbackMethodGeneric = registerCallbackMethod.MakeGenericMethod(serializedPropertyBindEventType, argsType);
-			MethodInfo callbackGeneric = typeof(ReferenceDropdownUIToolkit)
+			MethodInfo callbackGeneric = typeof(ReferenceDropdown)
 				.GetMethod(nameof(BindCallback), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(serializedPropertyBindEventType);
 			var callbackDelegate = Delegate.CreateDelegate(callbackType, callbackGeneric);
 			registerCallbackMethodGeneric.Invoke(element, new object[] { callbackDelegate, callback, TrickleDown.TrickleDown });
@@ -173,6 +207,9 @@ namespace Vertx.Attributes.Editor
 		{
 			Action<VisualElement, int> bind = listView.bindItem;
 
+			if (bind == null)
+				return;
+
 			void BindChain(VisualElement element, int index)
 			{
 				bind(element, index);
@@ -181,6 +218,22 @@ namespace Vertx.Attributes.Editor
 
 			typeof(ListView).GetMethod("SetBindItemWithoutNotify", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(listView, new object[] { (Action<VisualElement, int>)BindChain });
 		}
+
+		/*private void RegisterSerializedPropertyBindEvent(VisualElement element, Action<SerializedProperty> callback)
+		{
+			// TODO optimise this down into a cached delegate or two.
+			var registerCallbackMethod = typeof(CallbackEventHandler).GetMethods().Single(m => m.IsGenericMethod && m.Name == "RegisterCallback" && m.GetGenericArguments().Length == 2);
+			var serializedPropertyBindEventType = Type.GetType("UnityEditor.UIElements.SerializedPropertyBindEvent,UnityEditor");
+			Type argsType = typeof(Action<SerializedProperty>);
+			Type callbackType = typeof(EventCallback<,>).MakeGenericType(serializedPropertyBindEventType, argsType);
+			var registerCallbackMethodGeneric = registerCallbackMethod.MakeGenericMethod(serializedPropertyBindEventType, argsType);
+			MethodInfo callbackGeneric = typeof(ReferenceDropdown)
+				.GetMethod(nameof(BindCallbackProperty), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(serializedPropertyBindEventType);
+			var callbackDelegate = Delegate.CreateDelegate(callbackType, callbackGeneric);
+			registerCallbackMethodGeneric.Invoke(element, new object[] { callbackDelegate, callback, TrickleDown.TrickleDown });
+		}
+		
+		private static void BindCallbackProperty<T>(T evt, Action<SerializedProperty> callback) => callback((SerializedProperty)evt.GetType().GetProperty("bindProperty").GetValue(evt));*/
 	}
 }
 #endif

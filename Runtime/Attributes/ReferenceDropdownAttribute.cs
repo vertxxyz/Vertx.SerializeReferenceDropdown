@@ -15,7 +15,11 @@ namespace Vertx.Attributes
 		/// Shows "Set to null" in the context menu.
 		/// </summary>
 		AllowSetToNull = 1 << 1,
-		Default = ShowTypeConstraint | AllowSetToNull
+		/// <summary>
+		/// Shows a warning icon when the reference is null.
+		/// </summary>
+		ShowWarningForNull = 1 << 2,
+		Default = ShowTypeConstraint | AllowSetToNull | ShowWarningForNull
 	}
 
 	/// <summary>

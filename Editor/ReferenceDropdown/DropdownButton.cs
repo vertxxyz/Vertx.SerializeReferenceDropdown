@@ -12,68 +12,108 @@ namespace Vertx.Attributes.Editor
 		public const string UssClassName = "vertx-dropdown-button";
 		public const string LabelUssClassName = UssClassName + "__label";
 		public const string DropdownUssClassName = UssClassName + "__dropdown";
-		public const string WarningUssClassName = UssClassName + "__warning";
-		
+		public const string IconUssClassName = UssClassName + "__icon";
+
 		public string Text
 		{
-			get => textElement.text;
-			set => textElement.text = value;
+			get => _textElement.text;
+			set => _textElement.text = value;
 		}
 
-		public bool ShowWarning
+		public string Tooltip => labelElement.tooltip = value;
+
+		private HelpBoxMessageType _iconType = HelpBoxMessageType.None;
+
+		public HelpBoxMessageType IconType
 		{
-			get => warningElement?.visible ?? false;
+			get => _iconType;
 			set
 			{
-				if (warningElement == null)
+				if (_iconType == value)
+					return;
+
+				if (_iconElement == null)
 				{
-					if (!value) return;
-					warningElement = new VisualElement();
-					warningElement.AddToClassList(HelpBox.iconUssClassName);
-					warningElement.AddToClassList(HelpBox.iconwarningUssClassName);
-					warningElement.AddToClassList(WarningUssClassName);
-					VisualInput.Add(warningElement);
+					// When switching off and we have nothing, exit early
+					if (value == HelpBoxMessageType.None)
+					{
+						_iconType = value;
+						return;
+					}
+
+					// Switching on, create the icon element
+					_iconElement = new VisualElement
+					{
+						pickingMode = PickingMode.Ignore
+					};
+					_iconElement.AddToClassList(HelpBox.iconUssClassName);
+					_iconElement.AddToClassList(IconUssClassName);
+					labelElement.Add(_iconElement);
 				}
 
-				warningElement.visible = value;
+				if (value == HelpBoxMessageType.None)
+				{
+					// Switching off, remove the last icon class and make this invisible.
+					_iconElement.RemoveFromClassList(GetIconClass(_iconType));
+					_iconElement.visible = false;
+					_iconType = value;
+					return;
+				}
+
+				// Switching on
+				_iconElement.visible = true;
+				if (_iconType != HelpBoxMessageType.None)
+					_iconElement.RemoveFromClassList(GetIconClass(_iconType));
+				_iconElement.AddToClassList(GetIconClass(value));
+				_iconType = value;
 			}
 		}
-		
-		private readonly TextElement textElement;
-		private VisualElement warningElement;
-		private VisualElement internalVisualInput;
-		private readonly Action<DropdownButton> onSelect;
-		private VisualElement VisualInput => internalVisualInput ??= this.Q<VisualElement>(null, inputUssClassName);
 
-		public DropdownButton(string displayValue, Action<DropdownButton> onSelect, bool showWarning = false)
-			: this(null, displayValue, onSelect, showWarning) { }
+		private string GetIconClass(HelpBoxMessageType messageType) =>
+			messageType switch
+			{
+				HelpBoxMessageType.Info => HelpBox.iconInfoUssClassName,
+				HelpBoxMessageType.Warning => HelpBox.iconwarningUssClassName,
+				HelpBoxMessageType.Error => HelpBox.iconErrorUssClassName,
+				_ => null
+			};
 
-		public DropdownButton(string label, string displayValue, Action<DropdownButton> onSelect, bool showWarning = false) : base(label, null)
+		private readonly TextElement _textElement;
+		private VisualElement _iconElement;
+		private VisualElement _internalVisualInput;
+		private readonly Action<DropdownButton> _onSelect;
+		private VisualElement VisualInput => _internalVisualInput ??= this.Q<VisualElement>(null, inputUssClassName);
+
+		public DropdownButton(string displayValue, Action<DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None)
+			: this(null, displayValue, onSelect, iconType) { }
+
+		public DropdownButton(string label, string displayValue, Action<DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None) : base(label, null)
 		{
-			this.onSelect = onSelect;
+			_onSelect = onSelect;
 			AddToClassList(BasePopupField<string, string>.ussClassName);
+			AddToClassList(alignedFieldUssClassName);
 			AddToClassList(UssClassName);
 			labelElement.AddToClassList(BasePopupField<string, string>.labelUssClassName);
 			labelElement.AddToClassList(LabelUssClassName);
 			TextElement popupTextElement = new TextElement { pickingMode = PickingMode.Ignore };
-			textElement = popupTextElement;
-			textElement.AddToClassList(BasePopupField<string, string>.textUssClassName);
+			_textElement = popupTextElement;
+			_textElement.AddToClassList(BasePopupField<string, string>.textUssClassName);
 			VisualInput.AddToClassList(BasePopupField<string, string>.inputUssClassName);
 			VisualInput.AddToClassList(DropdownUssClassName);
-			textElement.text = displayValue;
-			VisualInput.Add(textElement);
+			_textElement.text = displayValue;
+			VisualInput.Add(_textElement);
 			var arrowElement = new VisualElement();
 			arrowElement.AddToClassList(BasePopupField<string, string>.arrowUssClassName);
 			arrowElement.pickingMode = PickingMode.Ignore;
 			VisualInput.Add(arrowElement);
 			RegisterCallback<PointerDownEvent>(ClickEvent);
-			ShowWarning = showWarning;
+			IconType = iconType;
 		}
 
 		private void ClickEvent(PointerDownEvent evt)
 		{
 			evt.StopPropagation();
-			onSelect?.Invoke(this);
+			_onSelect?.Invoke(this);
 		}
 	}
 }
