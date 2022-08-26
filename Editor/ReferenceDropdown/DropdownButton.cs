@@ -81,39 +81,49 @@ namespace Vertx.Attributes.Editor
 		private readonly TextElement _textElement;
 		private VisualElement _iconElement;
 		private VisualElement _internalVisualInput;
-		private readonly Action<DropdownButton> _onSelect;
+		private readonly Action<PointerDownEvent, DropdownButton> _onSelect;
 		private VisualElement VisualInput => _internalVisualInput ??= this.Q<VisualElement>(null, inputUssClassName);
 
-		public DropdownButton(string displayValue, Action<DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None)
+		public DropdownButton(string displayValue, Action<PointerDownEvent, DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None)
 			: this(null, displayValue, onSelect, iconType) { }
 
-		public DropdownButton(string label, string displayValue, Action<DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None) : base(label, null)
+		public DropdownButton(string label, string displayValue, Action<PointerDownEvent, DropdownButton> onSelect, HelpBoxMessageType iconType = HelpBoxMessageType.None) : base(label, null)
 		{
-			_onSelect = onSelect;
+			// Label
+			labelElement.AddToClassList(BasePopupField<string, string>.labelUssClassName);
+			labelElement.AddToClassList(LabelUssClassName);
+
+			// Visual input
+			// VisualInput.pickingMode = PickingMode.Position;
+			VisualInput.AddToClassList(BasePopupField<string, string>.inputUssClassName);
+			VisualInput.AddToClassList(DropdownUssClassName);
+			
+			// Text element
+			_textElement = new TextElement { pickingMode = PickingMode.Ignore };
+			_textElement.AddToClassList(BasePopupField<string, string>.textUssClassName);
+			_textElement.text = displayValue;
+			VisualInput.Add(_textElement);
+			
+			// Arrow element
+			var arrowElement = new VisualElement { pickingMode = PickingMode.Ignore };
+			arrowElement.AddToClassList(BasePopupField<string, string>.arrowUssClassName);
+			VisualInput.Add(arrowElement);
+			
+			// Initialisation
 			AddToClassList(BasePopupField<string, string>.ussClassName);
 			AddToClassList(alignedFieldUssClassName);
 			AddToClassList(UssClassName);
-			labelElement.AddToClassList(BasePopupField<string, string>.labelUssClassName);
-			labelElement.AddToClassList(LabelUssClassName);
-			TextElement popupTextElement = new TextElement { pickingMode = PickingMode.Ignore };
-			_textElement = popupTextElement;
-			_textElement.AddToClassList(BasePopupField<string, string>.textUssClassName);
-			VisualInput.AddToClassList(BasePopupField<string, string>.inputUssClassName);
-			VisualInput.AddToClassList(DropdownUssClassName);
-			_textElement.text = displayValue;
-			VisualInput.Add(_textElement);
-			var arrowElement = new VisualElement();
-			arrowElement.AddToClassList(BasePopupField<string, string>.arrowUssClassName);
-			arrowElement.pickingMode = PickingMode.Ignore;
-			VisualInput.Add(arrowElement);
-			RegisterCallback<PointerDownEvent>(ClickEvent);
+			
 			IconType = iconType;
+			_onSelect = onSelect;
+			// pickingMode = PickingMode.Ignore;
+			RegisterCallback<PointerDownEvent>(ClickEvent);
 		}
 
 		private void ClickEvent(PointerDownEvent evt)
 		{
 			evt.StopPropagation();
-			_onSelect?.Invoke(this);
+			_onSelect?.Invoke(evt, this);
 		}
 	}
 }

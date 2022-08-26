@@ -28,6 +28,7 @@ namespace Vertx.Attributes.Editor
 	{
 		private readonly ReferenceDropdownAttribute _attribute;
 		private const string StylePath = "Packages/com.vertx.serializereference-dropdown/Editor/Assets/SerializeDropdownStyle.uss";
+		private const string UssDecoratorDrawerContainer = "unity-decorator-drawers-container";
 		private const string UssClassName = "vertx-reference-dropdown";
 		private const string ContainerUssClassName = UssClassName + "__container";
 		private const string BackgroundUssClassName = UssClassName + "__background";
@@ -37,6 +38,15 @@ namespace Vertx.Attributes.Editor
 		private const string BackgroundName = nameof(ReferenceDropdown) + " Background";
 
 		private VisualElement _backgroundElement;
+		private PropertyField _parentPropertyField;
+		private ElementType _type;
+
+		private enum ElementType
+		{
+			Standard,
+			ArrayDriver,
+			ArrayElement
+		}
 
 		public ReferenceDropdown(ReferenceDropdownAttribute attribute)
 		{
@@ -52,6 +62,8 @@ namespace Vertx.Attributes.Editor
 
 		private void AttachToPanel(AttachToPanelEvent evt)
 		{
+			if (_parentPropertyField != null)
+				return;
 			VisualElement root = evt.destinationPanel.visualTree;
 			root = root.Children().SingleOrDefault(c => c.name.StartsWith("rootVisualContainer", StringComparison.Ordinal)) ?? root;
 			_serializeDropdownStyle ??= AssetDatabase.LoadAssetAtPath<StyleSheet>(StylePath);
@@ -66,6 +78,7 @@ namespace Vertx.Attributes.Editor
 
 			if (parentQuery is not PropertyField propertyField)
 				return;
+			_parentPropertyField = propertyField;
 
 			var serializedProperty = GetSerializedProperty(propertyField);
 			if (serializedProperty == null)
@@ -77,26 +90,40 @@ namespace Vertx.Attributes.Editor
 			if (serializedProperty.isArray)
 			{
 				name = ArrayDriverName;
+				_type = ElementType.ArrayDriver;
 				style.display = DisplayStyle.None;
 
 				RegisterArrayElementFields(propertyField);
 				return;
 			}
 
+			// Dropdown button
 			(GUIContent label, _) = GetLabel(_attribute, serializedProperty);
 			DropdownButton dropdownButton = new DropdownButton(
 				serializedProperty.displayName,
 				label.text,
-				button => ShowPropertyDropdown(
-					button.worldBound,
-					propertyField,
-					_attribute.Type,
-					() => UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true)
-				)
-			);
+				(evt, button) =>
+				{
+					switch (evt.button)
+					{
+						case 0:
+							ShowPropertyDropdown(
+								button.worldBound,
+								propertyField,
+								_attribute.Type,
+								() => UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true)
+							);
+							break;
+						case 1:
+							ShowContextMenu(GetSerializedProperty(propertyField), _attribute);
+							UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true);
+							break;
+					}
+				});
 			UpdateDropdownVisual(serializedProperty, dropdownButton, _attribute);
 			Add(dropdownButton);
 
+			// Background fill
 			if (_backgroundElement == null)
 			{
 				_backgroundElement = new VisualElement
@@ -110,7 +137,26 @@ namespace Vertx.Attributes.Editor
 			parentQuery.Insert(0, _backgroundElement);
 		}
 
-		private void DetachFromPanel(DetachFromPanelEvent evt) => _backgroundElement?.RemoveFromHierarchy();
+		private void DetachFromPanel(DetachFromPanelEvent evt)
+		{
+			if (_type == ElementType.ArrayElement && evt.destinationPanel == null && _parentPropertyField != null && _parentPropertyField.panel == evt.originPanel)
+			{
+				// Damn property field removes our decorator and obviously never re-adds it.
+				// Rebind is also not called, so this nightmare continues.
+				_parentPropertyField.schedule.Execute(() =>
+				{
+					// Already present, don't re-add.
+					if (_parentPropertyField.Q<VisualElement>(null, UssDecoratorDrawerContainer) != null)
+						return;
+					// Reattach hack.
+					_parentPropertyField.Insert(0, _backgroundElement);
+					_parentPropertyField.Insert(1, parent);
+				});
+				return;
+			}
+
+			_backgroundElement?.RemoveFromHierarchy();
+		}
 
 		private void RegisterArrayElementFields(
 			VisualElement root,
@@ -152,19 +198,20 @@ namespace Vertx.Attributes.Editor
 
 				void CreateDecorator(VisualElement element)
 				{
-					const string decoratorDrawerContainerUss = "unity-decorator-drawers-container";
-
 					var field = element.Q<PropertyField>();
-					if (field.Q<VisualElement>(null, decoratorDrawerContainerUss) != null)
+					if (field.Q<VisualElement>(null, UssDecoratorDrawerContainer) != null)
 						return; // Already set up!
+					// Append a fake decorator drawer to handle serialize references in collections.
 					var drawerContainer = new VisualElement
 					{
-						name = ArrayElementDecoratorName
+						name = ArrayElementDecoratorName,
+						pickingMode = PickingMode.Ignore
 					};
-					drawerContainer.AddToClassList(decoratorDrawerContainerUss);
+					drawerContainer.AddToClassList(UssDecoratorDrawerContainer);
 					drawerContainer.Add(new ReferenceDropdown(_attribute)
 					{
-						name = Name
+						name = Name,
+						_type = ElementType.ArrayElement
 					});
 					field.Insert(0, drawerContainer);
 				}
@@ -181,13 +228,13 @@ namespace Vertx.Attributes.Editor
 				dropdown.Text = label.text;
 			}
 			else
-				referenceIsAssigned = !string.IsNullOrEmpty(property.managedReferenceFullTypename);
+				referenceIsAssigned = ReferenceIsAssigned(property);
 
 			if ((attribute.Features & ReferenceDropdownFeatures.ShowWarningForNull) != 0)
 				dropdown.IconType = referenceIsAssigned ? HelpBoxMessageType.None : HelpBoxMessageType.Warning;
 		}
 
-		private void RegisterSerializedObjectBindEvent(VisualElement element, Action<SerializedObject> callback)
+		private static void RegisterSerializedObjectBindEvent(VisualElement element, Action<SerializedObject> callback)
 		{
 			// TODO optimise this down into a cached delegate or two.
 			var registerCallbackMethod = typeof(CallbackEventHandler).GetMethods().Single(m => m.IsGenericMethod && m.Name == "RegisterCallback" && m.GetGenericArguments().Length == 2);

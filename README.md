@@ -1,6 +1,6 @@
 # SerializeReference Dropdown
 ### `[ReferenceDropdown]`
-Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/SerializeReference.html) field, adding a type selection dropdown and optional features.  
+Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/SerializeReference.html) field, adding a type selection dropdown and other optional features.  
 
 | Argument                | Description                                                                                                                                                           |
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -11,13 +11,15 @@ Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/Se
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
 
 > **Note**  
-> `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.
-> IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
-> UIToolkit support uses stateful DecoratorDrawer hacks.  
-> Other implementations often don't support property drawers due to the complexity of these approaches.
+> `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
+> - IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
+> - UIToolkit support uses stateful DecoratorDrawer hacks.  
+> 
+> Other implementations often don't support property drawers due to this complexity.
 
 ---
 If you find this resource helpful:  
+
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
 
 ## Installation
@@ -52,7 +54,7 @@ To add it the package to your project:
 <details>
 <summary>Add from GitHub | <em>not recommended, no updates through UPM</em></summary>
 
-You can also add it directly from GitHub on Unity 2019.4+. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
+You can also add it directly from GitHub. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
 
 - open Package Manager
 - click <kbd>+</kbd>
@@ -60,7 +62,7 @@ You can also add it directly from GitHub on Unity 2019.4+. Note that you won't b
 - paste `https://github.com/vertxxyz/Vertx.SerializeReferenceDropdown.git`
 - click <kbd>Add</kbd>  
   **or**
-- Edit your `manifest.json` file to contain `"com.vertx.SerializeReferenceDropdown": "https://github.com/vertxxyz/Vertx.SerializeReferenceDropdown.git"`,
+- Edit your `manifest.json` file to contain `"com.vertx.serializereference-dropdown": "https://github.com/vertxxyz/Vertx.SerializeReferenceDropdown.git"`,
 
 ⚠️ SerializeReferenceDropdown has a dependency on [Editor Patching](https://github.com/needle-tools/editorpatching) and [Vertx.Utilities](https://github.com/vertxxyz/Vertx.Utilities) so ensure they are referenced into your project to use this package successfully. ⚠️
 

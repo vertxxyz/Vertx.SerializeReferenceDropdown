@@ -45,15 +45,15 @@ namespace Vertx.Attributes.Editor
 			}
 
 			bool referenceIsAssigned;
-			if (string.IsNullOrEmpty(property.managedReferenceFullTypename))
-			{
-				referenceIsAssigned = false;
-				label = group.defaultLabel;
-			}
-			else
+			if (ReferenceIsAssigned(property))
 			{
 				referenceIsAssigned = true;
 				GetTypeLabel(property, features, in group, out label);
+			}
+			else
+			{
+				referenceIsAssigned = false;
+				label = group.defaultLabel;
 			}
 
 			return (label, referenceIsAssigned);
@@ -162,6 +162,10 @@ namespace Vertx.Attributes.Editor
 			EditorUtils.GetObjectFromProperty(property, out _, out FieldInfo fieldInfo);
 			return EditorUtils.GetSerializedTypeFromFieldInfo(fieldInfo);
 		}
+
+		public static bool ReferenceIsAssigned(SerializedProperty property) => !string.IsNullOrEmpty(property.managedReferenceFullTypename);
+
+		public static void ShowContextMenu(SerializedProperty serializedProperty, ReferenceDropdownAttribute attribute) => ShowContextMenu(serializedProperty, ReferenceIsAssigned(serializedProperty), attribute.Features);
 
 		public static void ShowContextMenu(SerializedProperty serializedProperty, bool referenceIsAssigned, ReferenceDropdownFeatures features)
 		{
