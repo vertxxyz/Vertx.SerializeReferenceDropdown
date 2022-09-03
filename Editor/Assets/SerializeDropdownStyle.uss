@@ -29,20 +29,3 @@
 .vertx-reference-dropdown__container > .vertx-dropdown-button > .vertx-dropdown-button__label {
     -unity-font-style: bold;
 }
-
-.vertx-dropdown-button__dropdown {
-    flex-shrink: 1;
-}
-
-.vertx-dropdown-button__icon {
-    min-height: auto;
-    max-height: initial;
-    min-width: auto;
-    max-width: initial;
-    position: absolute;
-    right: 1px;
-    top: 1px;
-    bottom: 0;
-    width: 17px;
-}
-

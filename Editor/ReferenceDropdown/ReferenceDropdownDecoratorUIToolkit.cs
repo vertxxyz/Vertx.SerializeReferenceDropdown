@@ -27,7 +27,6 @@ namespace Vertx.Attributes.Editor
 	internal class ReferenceDropdown : VisualElement
 	{
 		private readonly ReferenceDropdownAttribute _attribute;
-		private const string StylePath = "Packages/com.vertx.serializereference-dropdown/Editor/Assets/SerializeDropdownStyle.uss";
 		private const string UssDecoratorDrawerContainer = "unity-decorator-drawers-container";
 		private const string UssClassName = "vertx-reference-dropdown";
 		private const string ContainerUssClassName = UssClassName + "__container";
@@ -55,6 +54,11 @@ namespace Vertx.Attributes.Editor
 			AddToClassList(ContainerUssClassName);
 			pickingMode = PickingMode.Ignore;
 			RegisterCallback<AttachToPanelEvent>(AttachToPanel);
+			// Add the stylesheet if required
+			RegisterCallback<AttachToPanelEvent, string>(
+				StyleSheetUtils.AddStyleSheetOnPanelEvent,
+				SheetPathsForDropdown.SerializeReferenceDropdownPath
+			);
 			RegisterCallback<DetachFromPanelEvent>(DetachFromPanel);
 		}
 
@@ -64,13 +68,6 @@ namespace Vertx.Attributes.Editor
 		{
 			if (_parentPropertyField != null)
 				return;
-			
-			// Add the stylesheet if required
-			VisualElement root = evt.destinationPanel.visualTree;
-			root = root.Children().SingleOrDefault(c => c.name.StartsWith("rootVisualContainer", StringComparison.Ordinal)) ?? root;
-			_serializeDropdownStyle ??= AssetDatabase.LoadAssetAtPath<StyleSheet>(StylePath);
-			if (!root.styleSheets.Contains(_serializeDropdownStyle))
-				root.styleSheets.Add(_serializeDropdownStyle);
 
 			// Find the parent PropertyField
 			VisualElement parentQuery = this;
@@ -89,7 +86,7 @@ namespace Vertx.Attributes.Editor
 				Debug.LogWarning($"PropertyField not bound before {nameof(AttachToPanel)} was called.");
 				return;
 			}
-			
+
 			if (serializedProperty.isArray)
 			{
 				// Turn off decorators on collections, and instead register to its children.
@@ -103,30 +100,31 @@ namespace Vertx.Attributes.Editor
 
 			// Dropdown button
 			(GUIContent label, _) = GetLabel(_attribute, serializedProperty);
-			DropdownButton dropdownButton = new DropdownButton(
+			var dropdownButton = new DropdownButton(
 				serializedProperty.displayName,
-				label.text,
-				(evt, button) =>
-				{
-					switch (evt.button)
-					{
-						case 0:
-							ShowPropertyDropdown(
-								button.worldBound,
-								propertyField,
-								_attribute.Type,
-								() => UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true)
-							);
-							break;
-						case 1:
-							ShowContextMenu(GetSerializedProperty(propertyField), _attribute);
-							UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true);
-							break;
-					}
-				})
+				label.text
+				)
 			{
 				bindingPath = serializedProperty.propertyPath
 			};
+			dropdownButton.RegisterClickCallback((evt, button, args) =>
+			{
+				switch (evt.button)
+				{
+					case 0:
+						ShowPropertyDropdown(
+							button.worldBound,
+							args._parentPropertyField,
+							args._attribute.Type,
+							() => UpdateDropdownVisual(GetSerializedProperty(args._parentPropertyField), button, args._attribute, true)
+						);
+						break;
+					case 1:
+						ShowContextMenu(GetSerializedProperty(args._parentPropertyField), args._attribute);
+						UpdateDropdownVisual(GetSerializedProperty(args._parentPropertyField), button, args._attribute, true);
+						break;
+				}
+			}, this);
 			UpdateDropdownVisual(serializedProperty, dropdownButton, _attribute);
 			Add(dropdownButton);
 
