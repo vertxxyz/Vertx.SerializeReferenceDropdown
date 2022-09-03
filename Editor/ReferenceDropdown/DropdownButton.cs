@@ -20,7 +20,10 @@ namespace Vertx.Attributes.Editor
 			set => _textElement.text = value;
 		}
 
-		public string Tooltip => labelElement.tooltip = value;
+		public string Tooltip
+		{
+			set => labelElement.tooltip = value;
+		}
 
 		private HelpBoxMessageType _iconType = HelpBoxMessageType.None;
 

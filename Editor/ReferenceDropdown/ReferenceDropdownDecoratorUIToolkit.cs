@@ -64,12 +64,15 @@ namespace Vertx.Attributes.Editor
 		{
 			if (_parentPropertyField != null)
 				return;
+			
+			// Add the stylesheet if required
 			VisualElement root = evt.destinationPanel.visualTree;
 			root = root.Children().SingleOrDefault(c => c.name.StartsWith("rootVisualContainer", StringComparison.Ordinal)) ?? root;
 			_serializeDropdownStyle ??= AssetDatabase.LoadAssetAtPath<StyleSheet>(StylePath);
 			if (!root.styleSheets.Contains(_serializeDropdownStyle))
 				root.styleSheets.Add(_serializeDropdownStyle);
 
+			// Find the parent PropertyField
 			VisualElement parentQuery = this;
 			do
 			{
@@ -86,9 +89,10 @@ namespace Vertx.Attributes.Editor
 				Debug.LogWarning($"PropertyField not bound before {nameof(AttachToPanel)} was called.");
 				return;
 			}
-
+			
 			if (serializedProperty.isArray)
 			{
+				// Turn off decorators on collections, and instead register to its children.
 				name = ArrayDriverName;
 				_type = ElementType.ArrayDriver;
 				style.display = DisplayStyle.None;
@@ -119,7 +123,10 @@ namespace Vertx.Attributes.Editor
 							UpdateDropdownVisual(GetSerializedProperty(propertyField), button, _attribute, true);
 							break;
 					}
-				});
+				})
+			{
+				bindingPath = serializedProperty.propertyPath
+			};
 			UpdateDropdownVisual(serializedProperty, dropdownButton, _attribute);
 			Add(dropdownButton);
 
