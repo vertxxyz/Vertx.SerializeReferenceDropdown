@@ -165,9 +165,10 @@ namespace Vertx.Attributes.Editor
 
 		public static bool ReferenceIsAssigned(SerializedProperty property) => !string.IsNullOrEmpty(property.managedReferenceFullTypename);
 
-		public static void ShowContextMenu(SerializedProperty serializedProperty, ReferenceDropdownAttribute attribute) => ShowContextMenu(serializedProperty, ReferenceIsAssigned(serializedProperty), attribute.Features);
+		public static void ShowContextMenu(SerializedProperty serializedProperty, ReferenceDropdownAttribute attribute, Action callback)
+			=> ShowContextMenu(serializedProperty, ReferenceIsAssigned(serializedProperty), attribute.Features, callback);
 
-		public static void ShowContextMenu(SerializedProperty serializedProperty, bool referenceIsAssigned, ReferenceDropdownFeatures features)
+		public static void ShowContextMenu(SerializedProperty serializedProperty, bool referenceIsAssigned, ReferenceDropdownFeatures features, Action callback)
 		{
 			GenericMenu menu = new GenericMenu();
 			if (referenceIsAssigned)
@@ -175,23 +176,31 @@ namespace Vertx.Attributes.Editor
 				if ((features & ReferenceDropdownFeatures.AllowSetToNull) != 0)
 				{
 					menu.AddItem(new GUIContent("Set to Null"), false,
-						property => PerformMultipleIfRequiredAndApplyModifiedProperties(
-							(SerializedProperty)property,
-							p => p.managedReferenceValue = null
-						),
+						property =>
+						{
+							PerformMultipleIfRequiredAndApplyModifiedProperties(
+								(SerializedProperty)property,
+								p => { p.managedReferenceValue = null; }
+							);
+							callback?.Invoke();
+						},
 						serializedProperty
 					);
 				}
 
 				menu.AddItem(new GUIContent("Reset Values To Defaults"), false,
-					property => PerformMultipleIfRequiredAndApplyModifiedProperties(
-						(SerializedProperty)property,
-						p =>
-						{
-							Type t = EditorUtils.GetObjectFromProperty(p, out _, out _).GetType();
-							p.managedReferenceValue = Activator.CreateInstance(t);
-						}
-					),
+					property =>
+					{
+						PerformMultipleIfRequiredAndApplyModifiedProperties(
+							(SerializedProperty)property,
+							p =>
+							{
+								Type t = EditorUtils.GetObjectFromProperty(p, out _, out _).GetType();
+								p.managedReferenceValue = Activator.CreateInstance(t);
+							}
+						);
+						callback?.Invoke();
+					},
 					serializedProperty
 				);
 			}

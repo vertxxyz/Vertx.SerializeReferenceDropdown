@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -78,6 +79,17 @@ namespace Vertx.Attributes.Editor
 
 			if (parentQuery is not PropertyField propertyField)
 				return;
+
+			// Do not append the UIToolkit drawer if we already have an IMGUI drawer.
+			foreach (var element in propertyField.Children())
+			{
+				if (element is IMGUIContainer)
+				{
+					RemoveFromHierarchy();
+					return;
+				}
+			}
+
 			_parentPropertyField = propertyField;
 
 			var serializedProperty = GetSerializedProperty(propertyField);
@@ -103,9 +115,9 @@ namespace Vertx.Attributes.Editor
 			var dropdownButton = new DropdownButton(
 				serializedProperty.displayName,
 				label.text
-				)
+			)
 			{
-				bindingPath = serializedProperty.propertyPath
+				// bindingPath = serializedProperty.propertyPath
 			};
 			dropdownButton.RegisterClickCallback((evt, button, args) =>
 			{
@@ -116,12 +128,20 @@ namespace Vertx.Attributes.Editor
 							button.worldBound,
 							args._parentPropertyField,
 							args._attribute.Type,
-							() => UpdateDropdownVisual(GetSerializedProperty(args._parentPropertyField), button, args._attribute, true)
-						);
+							() =>
+							{
+								SerializedProperty property = GetSerializedProperty(args._parentPropertyField);
+								UpdateDropdownVisual(property, button, args._attribute, true);
+								RebuildListViewIfRequired(args._parentPropertyField);
+							});
 						break;
 					case 1:
-						ShowContextMenu(GetSerializedProperty(args._parentPropertyField), args._attribute);
-						UpdateDropdownVisual(GetSerializedProperty(args._parentPropertyField), button, args._attribute, true);
+						SerializedProperty property = GetSerializedProperty(args._parentPropertyField);
+						ShowContextMenu(property, args._attribute, () =>
+						{
+							UpdateDropdownVisual(property, button, args._attribute, true);
+							RebuildListViewIfRequired(args._parentPropertyField);
+						});
 						break;
 				}
 			}, this);
@@ -237,6 +257,29 @@ namespace Vertx.Attributes.Editor
 
 			if ((attribute.Features & ReferenceDropdownFeatures.ShowWarningForNull) != 0)
 				dropdown.IconType = referenceIsAssigned ? HelpBoxMessageType.None : HelpBoxMessageType.Warning;
+		}
+
+		/// <summary>
+		/// Rebuild a list view. This is done because Unity fails to update the property field.
+		/// </summary>
+		private static void RebuildListViewIfRequired(PropertyField propertyField)
+		{
+			string bindingPath = propertyField.bindingPath;
+			Regex regex = new Regex(".+\\.Array\\.data\\[(\\d+)]");
+			Match match = regex.Match(bindingPath);
+			if (!match.Success || !int.TryParse(match.Groups[1].Value, out int index))
+				return;
+			
+			VisualElement parent = propertyField.parent;
+			while (!(parent is ListView) && parent != null)
+				parent = parent.parent;
+
+			if (parent is ListView listView)
+			{
+				// This only works if we do it this way!
+				propertyField.bindingPath = null;
+				listView.RefreshItem(index);
+			}
 		}
 
 		private static void RegisterSerializedObjectBindEvent(VisualElement element, Action<SerializedObject> callback)

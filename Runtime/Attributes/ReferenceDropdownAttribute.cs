@@ -30,13 +30,9 @@ namespace Vertx.Attributes
 		public readonly Type Type;
 		public readonly ReferenceDropdownFeatures Features;
 
-		public ReferenceDropdownAttribute() : this(null, ReferenceDropdownFeatures.Default) { }
-		public ReferenceDropdownAttribute(ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default) : this(null, features) { }
+		public ReferenceDropdownAttribute(ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default, int order = 100) : this(null, features, order) { }
 
-		public ReferenceDropdownAttribute(Type type = null, ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default) :
-			this(type, 100, features) { }
-
-		public ReferenceDropdownAttribute(Type type = null, int order = 100, ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default)
+		public ReferenceDropdownAttribute(Type type, ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default, int order = 100)
 		{
 			Type = type;
 			Features = features;

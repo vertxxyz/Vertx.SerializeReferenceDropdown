@@ -133,7 +133,7 @@ namespace Vertx.Attributes.Editor
 					// Context Menu on the prefix label.
 					Rect prefixLabelArea = new Rect(position.x, position.y, EditorGUIUtility.labelWidth, position.height);
 					if (prefixLabelArea.Contains(e.mousePosition))
-						ShowContextMenu(property, referenceIsAssigned, features);
+						ShowContextMenu(property, referenceIsAssigned, features, null);
 				}
 
 				// Header - Dropdown
