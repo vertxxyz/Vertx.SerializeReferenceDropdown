@@ -132,7 +132,7 @@ namespace Vertx.Attributes.Editor
 							{
 								SerializedProperty property = GetSerializedProperty(args._parentPropertyField);
 								UpdateDropdownVisual(property, button, args._attribute, true);
-								RebuildListViewIfRequired(args._parentPropertyField);
+								RebuildPropertyIfRequired(args._parentPropertyField, property);
 							});
 						break;
 					case 1:
@@ -140,7 +140,7 @@ namespace Vertx.Attributes.Editor
 						ShowContextMenu(property, args._attribute, () =>
 						{
 							UpdateDropdownVisual(property, button, args._attribute, true);
-							RebuildListViewIfRequired(args._parentPropertyField);
+							RebuildPropertyIfRequired(args._parentPropertyField, property);
 						});
 						break;
 				}
@@ -260,14 +260,29 @@ namespace Vertx.Attributes.Editor
 		}
 
 		/// <summary>
-		/// Rebuild a list view. This is done because Unity fails to update the property field.
+		/// Rebuild a property field if Unity fails to update the.
 		/// </summary>
-		private static void RebuildListViewIfRequired(PropertyField propertyField)
+		private static void RebuildPropertyIfRequired(PropertyField propertyField, SerializedProperty property)
 		{
 			string bindingPath = propertyField.bindingPath;
-			Regex regex = new Regex(".+\\.Array\\.data\\[(\\d+)]");
+			Regex regex = new Regex(".+\\.Array\\.data\\[(\\d+)]$");
 			Match match = regex.Match(bindingPath);
-			if (!match.Success || !int.TryParse(match.Groups[1].Value, out int index))
+			if (!match.Success)
+			{
+				foreach (VisualElement e in propertyField.Children())
+				{
+					if(e.ClassListContains("unity-decorator-drawers-container") || e.ClassListContains(BackgroundUssClassName))
+						continue;
+					return;
+				}
+
+				// If the field does not contain any non-decorator elements then it needs to be rebound.
+				// This handles the case where the field does not update if it was null and then you changed types.
+				propertyField.bindingPath = null;
+				propertyField.BindProperty(property);
+				return;
+			}
+			if (!int.TryParse(match.Groups[1].Value, out int index))
 				return;
 			
 			VisualElement parent = propertyField.parent;
@@ -276,7 +291,8 @@ namespace Vertx.Attributes.Editor
 
 			if (parent is ListView listView)
 			{
-				// This only works if we do it this way!
+				// If the field is in a list view, it doesn't update when changed.
+				// This handles that case.
 				propertyField.bindingPath = null;
 				listView.RefreshItem(index);
 			}

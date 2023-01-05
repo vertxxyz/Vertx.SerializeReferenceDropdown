@@ -7,6 +7,10 @@ Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/Se
 | **type** (optional)     | Type constraint                                                                                                                                                       |
 | **features** (optional) | Feature selection flags:<br/>- Remove the constrained type label (Type)<br/>- Remove "Set to null" from the context menu<br/>- Hide the warning icon for null entries |
 
+```csharp
+[SerializeReference, ReferenceDropdown]
+public Fruit[] FruitInstance;
+```
   
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
 
@@ -17,10 +21,9 @@ Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/Se
 > 
 > Other implementations often don't support property drawers due to this complexity.
 
----
-If you find this resource helpful:  
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
+> **Warning**  
+> UIToolkit support may have some issues responding to changes, especially involving Undo.  
+> If you have a problem, feel free to create an issue ticket, but pull requests are preferred as this is just a painfully buggy and unsupported area of Unity.
 
 ## Installation
 
@@ -28,43 +31,27 @@ If you find this resource helpful:
 > **This package requires Unity 2020.3+**  
 > In versions **below 2021** `ReferenceDropdown` may draw incorrectly when used with property drawers that nest property fields.
 
-<details>
-<summary>Add from OpenUPM <em>| via scoped registry, recommended</em></summary>
+[![openupm](https://img.shields.io/npm/v/com.vertx.serializereference-dropdown?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.serializereference-dropdown/)
 
-This package is available on OpenUPM: https://openupm.com/packages/com.vertx.serializereference-dropdown
+<table><tr><td>
 
-To add it the package to your project:
+#### Add the OpenUPM registry
+1. Open `Edit/Project Settings/Package Manager`
+1. Add a new Scoped Registry (or edit the existing OpenUPM entry):
+   ```
+   Name: OpenUPM
+   URL:  https://package.openupm.com/
+   Scope(s): com.vertx
+   ```
+1. **Save**
 
-- open `Edit/Project Settings/Package Manager`
-- add a new Scoped Registry:
-  ```
-  Name: OpenUPM
-  URL:  https://package.openupm.com/
-  Scope(s): com.vertx
-            com.needle
-  ```
-- click <kbd>Save</kbd>
-- open Package Manager
-- click <kbd>+</kbd>
-- select <kbd>Add from Git URL</kbd>
-- paste `com.vertx.serializereference-dropdown`
-- click <kbd>Add</kbd>  
-</details>
+#### Add the package
+1. Open the Package Manager via `Window/Package Manager`.
+1. Select the <kbd>+</kbd> from the top left of the window.
+1. Select **Add package by Name** or **Add package from Git URL**.
+1. Enter `com.vertx.serializereference-dropdown`.
+1. Select **Add**.
 
-<details>
-<summary>Add from GitHub | <em>not recommended, no updates through UPM</em></summary>
+</td></tr></table>
 
-You can also add it directly from GitHub. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
-
-- open Package Manager
-- click <kbd>+</kbd>
-- select <kbd>Add from Git URL</kbd>
-- paste `https://github.com/vertxxyz/Vertx.SerializeReferenceDropdown.git`
-- click <kbd>Add</kbd>  
-  **or**
-- Edit your `manifest.json` file to contain `"com.vertx.serializereference-dropdown": "https://github.com/vertxxyz/Vertx.SerializeReferenceDropdown.git"`,
-
-⚠️ SerializeReferenceDropdown has a dependency on [Editor Patching](https://github.com/needle-tools/editorpatching) and [Vertx.Utilities](https://github.com/vertxxyz/Vertx.Utilities) so ensure they are referenced into your project to use this package successfully. ⚠️
-
-To update the package with new changes, remove the lock from the `packages-lock.json` file.
-</details>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)

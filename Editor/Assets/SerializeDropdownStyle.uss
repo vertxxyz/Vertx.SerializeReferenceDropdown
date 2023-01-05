@@ -8,6 +8,7 @@
     margin-top: 2px;
     margin-left: -3px;
     margin-right: -3px;
+    padding-right: 2px;
 }
 
 .vertx-reference-dropdown__background {
@@ -16,7 +17,7 @@
     top: 22px;
     bottom: 0;
     left: 0;
-    right: 0;
+    right: -3px;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
 }
