@@ -16,20 +16,19 @@ public Fruit[] FruitInstance;
 
 > **Note**  
 > `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
-> - IMGUI support uses IL injection to make multiple modifications to the editor DLL.  
+> - IMGUI support (optional) uses IL injection to make multiple modifications to the editor DLL.  
 > - UIToolkit support uses stateful DecoratorDrawer hacks.  
 > 
 > Other implementations often don't support property drawers due to this complexity.
-
-> **Warning**  
-> UIToolkit support may have some issues responding to changes, especially involving Undo.  
-> If you have a problem, feel free to create an issue ticket, but pull requests are preferred as this is just a painfully buggy and unsupported area of Unity.
 
 ## Installation
 
 > **Warning**  
 > **This package requires Unity 2020.3+**  
 > In versions **below 2021** `ReferenceDropdown` may draw incorrectly when used with property drawers that nest property fields.
+> 
+> UIToolkit support may have some issues responding to changes, especially involving Undo.  
+> If you have a problem, feel free to create an issue ticket, but pull requests are preferred as this is just a painfully buggy and unsupported area of Unity.
 
 [![openupm](https://img.shields.io/npm/v/com.vertx.serializereference-dropdown?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.serializereference-dropdown/)
 
@@ -42,6 +41,7 @@ public Fruit[] FruitInstance;
    Name: OpenUPM
    URL:  https://package.openupm.com/
    Scope(s): com.vertx
+             com.needle
    ```
 1. **Save**
 
@@ -51,6 +51,10 @@ public Fruit[] FruitInstance;
 1. Select **Add package by Name** or **Add package from Git URL**.
 1. Enter `com.vertx.serializereference-dropdown`.
 1. Select **Add**.
+
+> **Warning**  
+> **If you want IMGUI support** you must also add `com.needle.editorpatching`.  
+> The `com.needle` scope is only required to support IMGUI.
 
 </td></tr></table>
 
