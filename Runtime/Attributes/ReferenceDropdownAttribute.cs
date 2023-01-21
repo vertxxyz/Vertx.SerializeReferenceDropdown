@@ -25,7 +25,7 @@ namespace Vertx.Attributes
 	/// <summary>
 	/// Decorates a [<see cref="SerializeReference"/>] field, providing instances of a type that can easily be added via a dropdown.  
 	/// </summary>
-	public class ReferenceDropdownAttribute : PropertyAttribute
+	public sealed class ReferenceDropdownAttribute : PropertyAttribute
 	{
 		public readonly Type Type;
 		public readonly ReferenceDropdownFeatures Features;

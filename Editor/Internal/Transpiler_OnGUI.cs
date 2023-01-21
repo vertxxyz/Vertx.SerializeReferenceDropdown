@@ -1,3 +1,4 @@
+#if IMGUI_REFERENCE_DROPDOWN
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -72,3 +73,4 @@ namespace Vertx.Attributes.Editor
 		}
 	}
 }
+#endif

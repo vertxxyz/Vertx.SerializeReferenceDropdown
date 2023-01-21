@@ -17,7 +17,7 @@ namespace Vertx.Attributes.Editor
 	/// Registering callbacks to the list view and injecting mock decorator drawers into its PropertyDrawers.
 	/// </summary>
 	[CustomPropertyDrawer(typeof(ReferenceDropdownAttribute))]
-	internal class ReferenceDropdownUIToolkit : DecoratorDrawer
+	internal sealed class ReferenceDropdownUIToolkit : DecoratorDrawer
 	{
 		// This is zero because IMGUI support is not handled via this decorator.
 		public override float GetHeight() => 0;
@@ -25,7 +25,7 @@ namespace Vertx.Attributes.Editor
 		public override VisualElement CreatePropertyGUI() => new ReferenceDropdown((ReferenceDropdownAttribute)attribute);
 	}
 
-	internal class ReferenceDropdown : VisualElement
+	internal sealed class ReferenceDropdown : VisualElement
 	{
 		private readonly ReferenceDropdownAttribute _attribute;
 		private const string UssDecoratorDrawerContainer = "unity-decorator-drawers-container";
