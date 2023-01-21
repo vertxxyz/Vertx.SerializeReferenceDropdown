@@ -18,6 +18,12 @@
     ],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.needle.editorpatching",
+            "expression": "0.0.0",
+            "define": "IMGUI_REFERENCE_DROPDOWN"
+        }
+    ],
     "noEngineReferences": false
 }
