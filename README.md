@@ -14,12 +14,11 @@ public Fruit[] FruitInstance;
   
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
 
-> **Note**  
-> `ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
-> - IMGUI support (optional) uses IL injection to make multiple modifications to the editor DLL.  
-> - UIToolkit support uses stateful DecoratorDrawer hacks.  
-> 
-> Other implementations often don't support property drawers due to this complexity.
+`ReferenceDropdown` supports **property drawers**, **decorators**, and  **UIToolkit**.  
+- IMGUI support (optional) uses IL injection to make multiple modifications to the editor DLL.  
+- UIToolkit support uses stateful DecoratorDrawer hacks.  
+
+Other implementations often don't support property drawers due to this complexity.
 
 ## Installation
 
@@ -52,9 +51,9 @@ public Fruit[] FruitInstance;
 1. Enter `com.vertx.serializereference-dropdown`.
 1. Select **Add**.
 
-> **Warning**  
-> **If you want IMGUI support** you must also add `com.needle.editorpatching`.  
-> The `com.needle` scope is only required to support IMGUI.
+#### Optionally add IMGUI support
+Add `com.needle.editorpatching`. The `com.needle` scope is only required to support IMGUI.  
+The implementation relies on patching the editor DLL so avoid adding it if it's not required. 
 
 </td></tr></table>
 
