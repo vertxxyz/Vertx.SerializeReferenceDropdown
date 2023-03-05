@@ -81,6 +81,7 @@ namespace Vertx.Attributes.Editor
 				return;
 
 			// Do not append the UIToolkit drawer if we already have an IMGUI drawer.
+#if IMGUI_REFERENCE_DROPDOWN
 			foreach (var element in propertyField.Children())
 			{
 				if (element is IMGUIContainer)
@@ -89,6 +90,7 @@ namespace Vertx.Attributes.Editor
 					return;
 				}
 			}
+#endif
 
 			_parentPropertyField = propertyField;
 
