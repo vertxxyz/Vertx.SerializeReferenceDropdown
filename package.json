@@ -1,7 +1,7 @@
 {
   "name": "com.vertx.serializereference-dropdown",
   "displayName": "SerializeReference Dropdown",
-  "version": "1.1.1",
+  "version": "1.0.2",
   "unity": "2020.3",
   "description": "Adds a type dropdown for SerializeReference fields. Supports custom drawers and UIToolkit.",
   "author": {
@@ -13,7 +13,7 @@
   "keywords": [],
   "category": "Tools",
   "dependencies": {
-    "com.vertx.attributes": "1.5.0",
+    "com.vertx.attributes": "1.5.1",
     "com.vertx.utilities": "3.1.0"
   }
 }
