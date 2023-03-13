@@ -4,6 +4,11 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.3]
+- Made changes to allow for users to fix an exception with Burst manually.
+  If you are using 2022.2+ it's advised to **remove the editorpatching package** and just use UIToolkit for all custom editors.
+  You can now fix the exception (*Failed to find entry-points*) by copying the `com.needle.editorpatching` package locally to your Packages directory, navigating to `com.needle.editorpatching@version/Editor/Plugins` and renaming the DLL to `0Harmony.dll`. Navigate to the `Editor` folder above and edit `needle.EditorPatching.asmdef` to include a precompiled reference to `"0Harmony.dll"`. 
+
 ## [1.0.2]
 - Fix for missing UIToolkit drawer when IMGUI support was disabled.
 
