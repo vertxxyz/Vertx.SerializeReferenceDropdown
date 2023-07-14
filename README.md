@@ -20,6 +20,10 @@ public Fruit[] FruitInstance;
 
 Other implementations often don't support property drawers due to this complexity.
 
+
+### Customising names
+You can inherit from `AdvancedDropdownAttribute`, and pass the type to ReferenceDropdown. When implemented on your target types it allows you to define custom names and paths for types.
+
 ## Installation
 
 > **Warning**  

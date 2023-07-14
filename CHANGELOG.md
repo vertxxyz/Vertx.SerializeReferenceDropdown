@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.4]
+### Fixed
+- Custom names are properly displayed in the assigned field if you target a `AdvancedDropdownAttribute` subclass.
+
 ## [1.0.3]
 - Made changes to allow for users to fix an exception with Burst manually.
   If you are using 2022.2+ it's advised to **remove the editorpatching package** and just use UIToolkit for all custom editors.

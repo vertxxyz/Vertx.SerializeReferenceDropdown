@@ -48,7 +48,7 @@ namespace Vertx.Attributes.Editor
 			if (ReferenceIsAssigned(property))
 			{
 				referenceIsAssigned = true;
-				GetTypeLabel(property, features, in group, out label);
+				GetTypeLabel(attribute.Type, property, features, in group, out label);
 			}
 			else
 			{
@@ -59,26 +59,39 @@ namespace Vertx.Attributes.Editor
 			return (label, referenceIsAssigned);
 		}
 
-		private static void GetTypeLabel(SerializedProperty property, ReferenceDropdownFeatures features, in (string fullTypeName, GUIContent defaultLabel) group, out GUIContent typeLabel)
+		private static void GetTypeLabel(Type typeConstraint, SerializedProperty property, ReferenceDropdownFeatures features, in (string fullTypeName, GUIContent defaultLabel) group, out GUIContent typeLabel)
 		{
-			int hashCode = property.type.GetHashCode() ^ group.fullTypeName.GetHashCode();
+			int hashCode = property.managedReferenceFullTypename.GetHashCode() ^ group.fullTypeName.GetHashCode();
 			if (typeLabelLookup.TryGetValue(hashCode, out typeLabel))
 				return;
+
+			string typeName = null;
+			if (typeConstraint != null
+			    && typeConstraint.IsSubclassOf(typeof(AdvancedDropdownAttribute))
+			    && EditorUtils.GetTypeFromManagedReferenceFullTypeName(property.managedReferenceFullTypename, out Type instanceType))
+			{
+				var attribute = instanceType.GetCustomAttribute<AdvancedDropdownAttribute>(true);
+				typeName = attribute?.Name;
+			}
+
+			typeName ??= property.type.Substring(managedRefStringLength, property.type.Length - managedRefStringLength - 1);
 
 			typeLabelLookup.Add(
 				hashCode,
 				typeLabel = new GUIContent(
 					// Assigned Type (Type Constraint)
 					(features & ReferenceDropdownFeatures.ShowTypeConstraint) != 0
-						? $"{ObjectNames.NicifyVariableName(property.type.Substring(managedRefStringLength, property.type.Length - managedRefStringLength - 1))} ({group.fullTypeName})"
-						: ObjectNames.NicifyVariableName(property.type.Substring(managedRefStringLength, property.type.Length - managedRefStringLength - 1))
+						? $"{ObjectNames.NicifyVariableName(typeName)} ({group.fullTypeName})"
+						: ObjectNames.NicifyVariableName(typeName)
 				)
 			);
 		}
 
 		public static SerializedProperty GetSerializedProperty(PropertyField propertyField)
 		{
-			var property = (SerializedProperty)typeof(PropertyField).GetProperty("serializedProperty", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(propertyField);
+			var property = (SerializedProperty)typeof(PropertyField).GetProperty("serializedProperty", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(propertyField);
+			if (property == null)
+				return null;
 			if (property.propertyPath == "")
 				property = property.serializedObject.FindProperty(propertyField.bindingPath);
 			return property;
@@ -125,7 +138,9 @@ namespace Vertx.Attributes.Editor
 						!t.IsPointer && // Again, no.
 						!t.IsAbstract && // Cannot serialize an abstract instance.
 						!t.IsArray && // Array types will not work.
-						!t.IsSubclassOf(typeof(Object)) && // UnityEngine.Object types cannot be assigned.
+						!t.ContainsGenericParameters && // Types that contain generic parameters cannot be created.
+						// ReSharper disable once RedundantNameQualifier
+						!t.IsSubclassOf(typeof(UnityEngine.Object)) && // UnityEngine.Object types cannot be assigned.
 						t.GetCustomAttribute<CompilerGeneratedAttribute>() == null // Compiler generated code is irrelevant.
 					// There are likely more constraints that can be added here. I am unsure what the exact restrictions around generics are.
 				);
