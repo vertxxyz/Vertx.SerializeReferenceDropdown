@@ -9,7 +9,7 @@ Decorates a [`[SerializeReference]`](https://docs.unity3d.com/ScriptReference/Se
 
 ```csharp
 [SerializeReference, ReferenceDropdown]
-public Fruit[] FruitInstance;
+public Fruit FruitInstance;
 ```
   
 ![ReferenceDropdown Example](Documentation~/ReferenceDropdownExample.gif)
@@ -26,7 +26,7 @@ You can inherit from `AdvancedDropdownAttribute`, and pass the type to Reference
 
 ## Installation
 
-> **Warning**  
+> [!Warning]  
 > **This package requires Unity 2020.3+**  
 > In versions **below 2021** `ReferenceDropdown` may draw incorrectly when used with property drawers that nest property fields.
 > 

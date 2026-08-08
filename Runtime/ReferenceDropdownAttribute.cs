@@ -14,6 +14,9 @@ namespace Vertx.Attributes
 		public ReferenceDropdownAttribute(ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default, int order = 100) : this(null, features, order) { }
 
 		public ReferenceDropdownAttribute(Type type, ReferenceDropdownFeatures features = ReferenceDropdownFeatures.Default, int order = 100)
+#if UNITY_6000_3_OR_NEWER
+			: base(true)
+#endif
 		{
 			Type = type;
 			Features = features;

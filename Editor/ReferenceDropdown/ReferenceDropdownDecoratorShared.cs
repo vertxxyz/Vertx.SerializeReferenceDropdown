@@ -36,7 +36,7 @@ namespace Vertx.Attributes.Editor
 				// Populate the name of the type associated with the property
 				string fullTypeName = GetRelevantType(property, specifiedType).Name;
 				if (fullTypeName.EndsWith("Attribute"))
-					fullTypeName = fullTypeName.Substring(0, fullTypeName.Length - 9);
+					fullTypeName = fullTypeName.Substring(0, fullTypeName.Length - "Attribute".Length);
 				group = (
 					fullTypeName, // fullTypeName
 					(features & ReferenceDropdownFeatures.ShowTypeConstraint) != 0 ? new GUIContent($"Null ({fullTypeName})") : new GUIContent("Null") // defaultLabel
@@ -185,7 +185,7 @@ namespace Vertx.Attributes.Editor
 
 		public static void ShowContextMenu(SerializedProperty serializedProperty, bool referenceIsAssigned, ReferenceDropdownFeatures features, Action callback)
 		{
-			GenericMenu menu = new GenericMenu();
+			var menu = new GenericMenu();
 			if (referenceIsAssigned)
 			{
 				if ((features & ReferenceDropdownFeatures.AllowSetToNull) != 0)

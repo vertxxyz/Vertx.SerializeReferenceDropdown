@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.0.4]
 ### Fixed
 - Custom names are properly displayed in the assigned field if you target a `AdvancedDropdownAttribute` subclass.
+- Added support for 6000.6.
 
 ## [1.0.3]
 - Made changes to allow for users to fix an exception with Burst manually.
