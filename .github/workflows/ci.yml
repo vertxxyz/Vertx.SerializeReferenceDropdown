@@ -45,7 +45,7 @@ jobs:
 
       - name: Sign package
         run: |
-          rmdir .github
+          rm -r .github
           mkdir -p "$DIST_DIR"
           upm pack ./ --organization-id "$UPM_ORG_ID" --destination "$DIST_DIR"
 
