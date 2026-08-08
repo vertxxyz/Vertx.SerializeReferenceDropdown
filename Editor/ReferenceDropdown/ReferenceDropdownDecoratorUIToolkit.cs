@@ -200,7 +200,7 @@ namespace Vertx.Attributes.Editor
 				return;
 			}
 
-			VisualElement contentContainer = listView.Q<VisualElement>(null, ScrollView.contentUssClassName);
+			var contentContainer = listView.Q<VisualElement>(null, ScrollView.contentUssClassName);
 			if (contentContainer == null)
 			{
 				if (depth == 0)
@@ -216,12 +216,14 @@ namespace Vertx.Attributes.Editor
 			RegisterSerializedObjectBindEvent(listView, _ => listView.schedule.Execute(() => RefreshListViewSerializeReferenceDropdown(listView)));
 
 			RefreshListViewSerializeReferenceDropdown(listView);
+			return;
 
 			void RefreshListViewSerializeReferenceDropdown(ListView list)
 			{
 				AppendMethodToBindItemWithoutNotify(list, CreateDecorator);
-				for (int i = 0; i < contentContainer.childCount; i++)
+				for (var i = 0; i < contentContainer.childCount; i++)
 					CreateDecorator(contentContainer[i]);
+				return;
 
 				void CreateDecorator(VisualElement element)
 				{
@@ -267,7 +269,7 @@ namespace Vertx.Attributes.Editor
 		private static void RebuildPropertyIfRequired(PropertyField propertyField, SerializedProperty property)
 		{
 			string bindingPath = propertyField.bindingPath;
-			Regex regex = new Regex(".+\\.Array\\.data\\[(\\d+)]$");
+			var regex = new Regex(".+\\.Array\\.data\\[(\\d+)]$");
 			Match match = regex.Match(bindingPath);
 			if (!match.Success)
 			{
@@ -303,13 +305,21 @@ namespace Vertx.Attributes.Editor
 		private static void RegisterSerializedObjectBindEvent(VisualElement element, Action<SerializedObject> callback)
 		{
 			// TODO optimise this down into a cached delegate or two.
-			var registerCallbackMethod = typeof(CallbackEventHandler).GetMethods().Single(m => m.IsGenericMethod && m.Name == "RegisterCallback" && m.GetGenericArguments().Length == 2);
+			var registerCallbackMethod = typeof(CallbackEventHandler).GetMethods().Single(m =>
+			{
+				if (!m.IsGenericMethod) return false;
+				if (m.Name != "RegisterCallback") return false;
+				if (m.GetGenericArguments().Length != 2) return false;
+				ParameterInfo[] parameters = m.GetParameters();
+				if (parameters[^1].ParameterType != typeof(TrickleDown)) return false;
+				return parameters.Length == 3;
+			});
 			var serializedPropertyBindEventType = Type.GetType("UnityEditor.UIElements.SerializedObjectBindEvent,UnityEditor");
 			Type argsType = typeof(Action<SerializedObject>);
 			Type callbackType = typeof(EventCallback<,>).MakeGenericType(serializedPropertyBindEventType, argsType);
 			var registerCallbackMethodGeneric = registerCallbackMethod.MakeGenericMethod(serializedPropertyBindEventType, argsType);
 			MethodInfo callbackGeneric = typeof(ReferenceDropdown)
-				.GetMethod(nameof(BindCallback), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(serializedPropertyBindEventType);
+				.GetMethod(nameof(BindCallback), BindingFlags.NonPublic | BindingFlags.Static)!.MakeGenericMethod(serializedPropertyBindEventType);
 			var callbackDelegate = Delegate.CreateDelegate(callbackType, callbackGeneric);
 			registerCallbackMethodGeneric.Invoke(element, new object[] { callbackDelegate, callback, TrickleDown.TrickleDown });
 		}
