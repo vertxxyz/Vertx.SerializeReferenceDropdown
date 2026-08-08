@@ -35,8 +35,9 @@ jobs:
 
       - name: Install Unity UPM CLI
         run: |
-          curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o install.sh
-          bash install.sh
+          mkdir -p tmp/upm
+          curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o tmp/upm/install.sh
+          bash tmp/upm/install.sh
           echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
 
       - name: Verify Unity UPM CLI
@@ -44,6 +45,7 @@ jobs:
 
       - name: Sign package
         run: |
+          rmdir .github
           mkdir -p "$DIST_DIR"
           upm pack ./ --organization-id "$UPM_ORG_ID" --destination "$DIST_DIR"
 
